@@ -1,0 +1,9 @@
+name = "CeeSectionBuckling"
+uuid = "58e103f9-c1dd-473d-8fd2-46aa5cb27d98"
+authors = ["Cris Moen <cris.moen@runtosolve.com>"]
+version = "0.1.0"
+
+[deps]
+AISIS100 = "01f7396e-a581-4110-84fa-e8964400bef8"
+CUFSM = "82b4978f-06ae-48e0-88e8-a26b4f7a0fa1"
+CrossSectionGeometry = "e5713cf4-1a83-4860-95bf-b82253e75fb4"

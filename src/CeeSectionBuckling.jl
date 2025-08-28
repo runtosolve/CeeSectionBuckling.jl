@@ -187,6 +187,59 @@ end
 
 
 
+function calculate_Pcrℓ(dimensions, coordinates, material)
+
+    label = "Pcrℓ"
+
+    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    D = dimensions.D
+
+    if B > D
+        lengths = range(0.5 * B, 1.5 * B, 9)
+    else
+        lengths = range(0.5 * D, 1.5 * D, 9)
+    end
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+function calculate_Pcrℓ(dimensions, coordinates, material, lengths)
+
+    label = "Pcrℓ"
+
+    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+
+    # B = dimensions.B 
+    # D = dimensions.D
+
+    # if B > D
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.5 * D, 1.5 * D, 9)
+    # end
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
 function calculate_Pcrd(dimensions, material)
 
     label = "Pcrd"
@@ -205,6 +258,30 @@ function calculate_Pcrd(dimensions, material)
     return section 
 
 end
+
+
+
+function calculate_Pcrd(dimensions, coordinates, material, lengths)
+
+    label = "Pcrd"
+
+    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+
+    # load_type = "P"
+    # lengths = [calculate_Lcrd(dimensions, material, load_type)]
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
 
 function calculate_Mcrd_xx(dimensions, material)
 
@@ -226,6 +303,47 @@ function calculate_Mcrd_xx(dimensions, material)
 end
 
 
+function calculate_Mcrd_xx(dimensions, coordinates, material)
+
+    label = "Mcrd_xx"
+
+    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+
+    load_type = "M"
+    lengths = [calculate_Lcrd(dimensions, material, load_type)]
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+function calculate_Mcrd_xx(dimensions, coordinates, material, lengths)
+
+    label = "Mcrd_xx"
+
+    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+
+    load_type = "M"
+    # lengths = [calculate_Lcrd(dimensions, material, load_type)]
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
 function calculate_Mcrℓ_xx(dimensions, material)
 
     label = "Mcrℓ_xx"
@@ -242,6 +360,61 @@ function calculate_Mcrℓ_xx(dimensions, material)
     end
 
     coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
+function calculate_Mcrℓ_xx(dimensions, coordinates, material)
+
+    label = "Mcrℓ_xx"
+
+    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    D = dimensions.D
+
+    if B > D / 2
+        lengths = range(0.5 * B, 1.5 * B, 9)
+    else
+        lengths = range(0.25 * D, 1.25 * D, 9)
+    end
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
+
+function calculate_Mcrℓ_xx(dimensions, coordinates, material, lengths)
+
+    label = "Mcrℓ_xx"
+
+    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+
+    # B = dimensions.B 
+    # D = dimensions.D
+
+    # if B > D / 2
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+    # coordinates = get_section_coordinates(dimensions)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
@@ -275,6 +448,110 @@ function calculate_Mcrd_yy_pos(dimensions, material)
 end
 
 
+function calculate_Mcrd_yy_pos(dimensions, coordinates, material)
+
+    label = "Mcrd_yy_pos"
+
+    load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
+
+    load_type = "M"
+    Lcrd = calculate_Lcrd(dimensions, material, load_type)
+    
+    lengths = range(0.5 * Lcrd, 1.5 * Lcrd, 9)
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+function calculate_Mcrℓ_yy_pos(dimensions, material)
+
+    label = "Mcrℓ_yy_pos"
+
+    load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    D = dimensions.D
+
+    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+
+    if B > 2 * D 
+        lengths = range(0.5 * B, 1.5 * B, 9)
+    else
+        lengths = range(0.25 * D, 1.25 * D, 9)
+    end
+
+    # B = dimensions.B 
+    # D = dimensions.D
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+function calculate_Mcrℓ_yy_pos(dimensions, coordinates, material)
+
+    label = "Mcrℓ_yy_pos"
+
+    load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    # D = dimensions.D
+    L = dimensions.L
+
+    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+
+    lengths = range(L, 1.2 * B, 9)
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+
+    # B = dimensions.B 
+    # D = dimensions.D
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+
+
+
+
 function calculate_Mcrℓ_yy_neg(dimensions, material)
 
     label = "Mcrℓ_yy_neg"
@@ -284,11 +561,16 @@ function calculate_Mcrℓ_yy_neg(dimensions, material)
     B = dimensions.B 
     D = dimensions.D
 
-    if B > 2 * D 
-        lengths = range(0.5 * B, 1.5 * B, 9)
-    else
-        lengths = range(0.25 * D, 1.25 * D, 9)
-    end
+
+    lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+
+
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
 
     coordinates = get_section_coordinates(dimensions)
 
@@ -299,6 +581,69 @@ function calculate_Mcrℓ_yy_neg(dimensions, material)
     return section 
 
 end
+
+
+
+
+function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material)
+
+    label = "Mcrℓ_yy_neg"
+
+    load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    D = dimensions.D
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+    lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+
+
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
+
+function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material, lengths)
+
+    label = "Mcrℓ_yy_neg"
+
+    load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
+
+    B = dimensions.B 
+    D = dimensions.D
+
+    # if B > 2 * D 
+    #     lengths = range(0.5 * B, 1.5 * B, 9)
+    # else
+    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    # end
+
+    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+
+
+
+    # coordinates = get_section_coordinates(dimensions)
+
+    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+    section = Section(label, material, dimensions, load, results)
+
+    return section 
+
+end
+
 
 
 

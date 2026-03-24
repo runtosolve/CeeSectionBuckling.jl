@@ -15,10 +15,10 @@ struct Dimensions
 
     t 
 
-    L 
-    B 
-    D 
-    r  #inside radius 
+    L   #lip
+    B   #flange
+    H   #web
+    r   #inside radius 
 
 end
 
@@ -62,11 +62,11 @@ function get_section_coordinates(dimensions)
 
     L,
     B,
-    D, 
+    H, 
     r  #inside radius 
     ) = dimensions 
 
-    section_dimensions = [L, B, D, B, L]
+    section_dimensions = [L, B, H, B, L]
     r = [r+t, r+t, r+t, r+t]
     n = [3, 3, 3, 3, 3]
     n_r = [3, 3, 3, 3];
@@ -124,7 +124,7 @@ function calculate_Lcrd(dimensions, material, load_type)
     (;t, 
     L, 
     B,
-    D, 
+    H, 
     r ) = dimensions 
 
     (;E,
@@ -138,7 +138,7 @@ function calculate_Lcrd(dimensions, material, load_type)
     b = B - t
     d = L - t/2
     θ = 90.0
-    ho = D
+    ho = H
     μ = ν
     E = 29500.0
     G = E / (2 * (1 + μ))
@@ -167,12 +167,12 @@ function calculate_Pcrℓ(dimensions, material)
     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    if B > D
+    if B > H
         lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.5 * D, 1.5 * D, 9)
+        lengths = range(0.5 * H, 1.5 * H, 9)
     end
 
     coordinates = get_section_coordinates(dimensions)
@@ -194,12 +194,12 @@ function calculate_Pcrℓ(dimensions, coordinates, material)
     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    if B > D
+    if B > H
         lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.5 * D, 1.5 * D, 9)
+        lengths = range(0.5 * H, 1.5 * H, 9)
     end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -220,12 +220,12 @@ function calculate_Pcrℓ(dimensions, coordinates, material, lengths)
     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
 
     # B = dimensions.B 
-    # D = dimensions.D
+    # H = dimensions.H
 
-    # if B > D
+    # if B > H
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.5 * D, 1.5 * D, 9)
+    #     lengths = range(0.5 * H, 1.5 * H, 9)
     # end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -351,12 +351,12 @@ function calculate_Mcrℓ_xx(dimensions, material)
     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    if B > D / 2
+    if B > H / 2
         lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.25 * D, 1.25 * D, 9)
+        lengths = range(0.25 * H, 1.25 * H, 9)
     end
 
     coordinates = get_section_coordinates(dimensions)
@@ -378,12 +378,12 @@ function calculate_Mcrℓ_xx(dimensions, coordinates, material)
     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    if B > D / 2
+    if B > H / 2
         lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.25 * D, 1.25 * D, 9)
+        lengths = range(0.25 * H, 1.25 * H, 9)
     end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -406,12 +406,12 @@ function calculate_Mcrℓ_xx(dimensions, coordinates, material, lengths)
     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
     # B = dimensions.B 
-    # D = dimensions.D
+    # H = dimensions.H
 
-    # if B > D / 2
+    # if B > H / 2
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -477,23 +477,23 @@ function calculate_Mcrℓ_yy_pos(dimensions, material)
     load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+    # lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
-    if B > 2 * D 
+    if B > 2 * H 
         lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.25 * D, 1.25 * D, 9)
+        lengths = range(0.25 * H, 1.25 * H, 9)
     end
 
     # B = dimensions.B 
-    # D = dimensions.D
+    # H = dimensions.H
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -514,27 +514,27 @@ function calculate_Mcrℓ_yy_pos(dimensions, coordinates, material)
     load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
 
     B = dimensions.B 
-    # D = dimensions.D
+    # H = dimensions.H
     L = dimensions.L
 
-    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+    # lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
     lengths = range(L, 1.2 * B, 9)
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
 
     # B = dimensions.B 
-    # D = dimensions.D
+    # H = dimensions.H
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
     # coordinates = get_section_coordinates(dimensions)
@@ -559,17 +559,17 @@ function calculate_Mcrℓ_yy_neg(dimensions, material)
     load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
 
-    lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+    lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
 
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
     coordinates = get_section_coordinates(dimensions)
@@ -592,15 +592,15 @@ function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material)
     load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
-    lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+    lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
 
 
@@ -622,15 +622,15 @@ function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material, lengths)
     load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
 
     B = dimensions.B 
-    D = dimensions.D
+    H = dimensions.H
 
-    # if B > 2 * D 
+    # if B > 2 * H 
     #     lengths = range(0.5 * B, 1.5 * B, 9)
     # else
-    #     lengths = range(0.25 * D, 1.25 * D, 9)
+    #     lengths = range(0.25 * H, 1.25 * H, 9)
     # end
 
-    # lengths = range(0.5*maximum([B, D]), 2.0*maximum([B, D]), 7)
+    # lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
 
 

@@ -1,7 +1,7 @@
 module CeeSectionBuckling
 
 
-using CrossSectionGeometry, CUFSM, AISIS100 
+using CrossSectionGeometry, CUFSM, AISIS100
 
 
 struct Material

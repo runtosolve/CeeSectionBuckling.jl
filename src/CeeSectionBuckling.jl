@@ -1,7 +1,7 @@
 module CeeSectionBuckling
 
 
-using CrossSectionGeometry, CUFSM, AISIS100
+using CrossSectionGeometry, CUFSM, AISIS100, SectionProperties
 
 
 struct Material
@@ -80,6 +80,20 @@ function get_section_coordinates(dimensions)
     coordinates = (X=X, Y=Y)
 
     return coordinates
+
+end
+
+
+function calculate_section_properties(coordinates, t)
+
+    X = coordinates.X 
+    Y = coordinates.Y
+
+    t_all = fill(t, length(X)-1)
+
+    section_properties = SectionProperties.open_thin_walled(X, Y, t_all)
+
+    return section_properties 
 
 end
 

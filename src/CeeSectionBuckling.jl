@@ -1,7 +1,7 @@
 module CeeSectionBuckling
 
 
-using CrossSectionGeometry, CUFSM, AISIS100, SectionProperties
+using CrossSectionGeometry, CUFSM, AISIS100, SectionProperties, OpenSectionBuckling
 
 
 struct Material
@@ -44,11 +44,15 @@ end
 
 struct Section
 
-    label 
-    material 
-    dimensions 
-    load  
-    results 
+    label
+    material
+    dimensions
+    load
+    results
+    cFSM_flag
+
+    Section(label, material, dimensions, load, results, cFSM_flag=false) =
+        new(label, material, dimensions, load, results, cFSM_flag)
 
 end
 
@@ -84,6 +88,74 @@ function get_section_coordinates(dimensions)
 end
 
 
+
+function get_straight_corner_section_coordinates(dimensions)
+
+    (;
+    t, 
+
+    L,
+    B,
+    H, 
+    r  #inside radius 
+    ) = dimensions 
+
+    section_dimensions = [L, B, H, B, L]
+    n = [1, 1, 1, 1, 1]
+    θ = [π/2, π, -π/2, 0.0, π/2]
+
+    coordinates = CrossSectionGeometry.create_thin_walled_cross_section_geometry(section_dimensions, θ, n, t, centerline = "to left", offset = (section_dimensions[2], section_dimensions[3] - section_dimensions[1]))
+
+    X = [coordinates.centerline_node_XY[i][1] for i in eachindex(coordinates.centerline_node_XY)]
+    Y = [coordinates.centerline_node_XY[i][2] for i in eachindex(coordinates.centerline_node_XY)]
+
+    coordinates = (X=X, Y=Y, L=section_dimensions)
+
+    return coordinates
+
+end
+
+
+function calculate_constrained_buckling_properties(straight_corner_coordinates, dimensions, loads, material, mode_type)
+
+    (;E,
+    ν
+    ) = material 
+
+    (;P,
+    Mxx,
+    Mzz,
+    M11,
+    M22,
+    ) = loads
+
+    t = dimensions.t
+
+
+
+    ###
+
+    # flat_mesh_size_goal = 0.5
+    # corner_mesh_size_goal = π/6
+    # centerline_radius = r + t/2
+
+
+    #coordinates coming in are straight corner X, Y
+
+    coordinates = (straight=straight_corner_coordinates, rounded=straight_corner_coordinates) #rounded not used for now 
+
+    material = (E=E, ν=ν)
+
+    loads = (P=P, Mxx=Mxx, Mzz=Mzz, M11=M11, M22=M22)
+
+    # mode_type = ["D"]
+    model = OpenSectionBuckling.properties(coordinates, material, loads, t, mode_type)
+
+    return model 
+
+end
+
+
 function calculate_section_properties(coordinates, t)
 
     X = coordinates.X 
@@ -96,6 +168,12 @@ function calculate_section_properties(coordinates, t)
     return section_properties 
 
 end
+
+
+
+
+
+
 
 
 function calculate_buckling_properties(coordinates, dimensions, loads, material, lengths)
@@ -189,68 +267,90 @@ function calculate_Pcrℓ(dimensions, material)
         lengths = range(0.5 * H, 1.5 * H, 9)
     end
 
-    coordinates = get_section_coordinates(dimensions)
+    coordinates = get_section_coordinates(dimensions) #centerline coordinates 
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    #catch indistinct local buckling minimum here 
+    mode_type = ["L"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
 
-    return section 
+    Lcr_cFSM = model.curve[1][1]
 
-end
+    # println("Lcr_cFSM", Lcr_cFSM)
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
 
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
+        section = Section(label, material, dimensions, load, results, true)
 
-function calculate_Pcrℓ(dimensions, coordinates, material)
-
-    label = "Pcrℓ"
-
-    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
-
-    B = dimensions.B 
-    H = dimensions.H
-
-    if B > H
-        lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.5 * H, 1.5 * H, 9)
+
+        section = Section(label, material, dimensions, load, results)
+
     end
-
-    # coordinates = get_section_coordinates(dimensions)
-
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
-
-    section = Section(label, material, dimensions, load, results)
+    
 
     return section 
 
 end
 
 
-function calculate_Pcrℓ(dimensions, coordinates, material, lengths)
 
-    label = "Pcrℓ"
+# function calculate_Pcrℓ(dimensions, coordinates, material)
 
-    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+#     label = "Pcrℓ"
 
-    # B = dimensions.B 
-    # H = dimensions.H
+#     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
 
-    # if B > H
-    #     lengths = range(0.5 * B, 1.5 * B, 9)
-    # else
-    #     lengths = range(0.5 * H, 1.5 * H, 9)
-    # end
+#     B = dimensions.B 
+#     H = dimensions.H
 
-    # coordinates = get_section_coordinates(dimensions)
+#     if B > H
+#         lengths = range(0.5 * B, 1.5 * B, 9)
+#     else
+#         lengths = range(0.5 * H, 1.5 * H, 9)
+#     end
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    section = Section(label, material, dimensions, load, results)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    return section 
+#     section = Section(label, material, dimensions, load, results)
 
-end
+#     return section 
+
+# end
+
+
+# function calculate_Pcrℓ(dimensions, coordinates, material, lengths)
+
+#     label = "Pcrℓ"
+
+#     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+
+#     # B = dimensions.B 
+#     # H = dimensions.H
+
+#     # if B > H
+#     #     lengths = range(0.5 * B, 1.5 * B, 9)
+#     # else
+#     #     lengths = range(0.5 * H, 1.5 * H, 9)
+#     # end
+
+#     # coordinates = get_section_coordinates(dimensions)
+
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+#     section = Section(label, material, dimensions, load, results)
+
+#     return section 
+
+# end
 
 
 
@@ -275,24 +375,24 @@ end
 
 
 
-function calculate_Pcrd(dimensions, coordinates, material, lengths)
+# function calculate_Pcrd(dimensions, coordinates, material, lengths)
 
-    label = "Pcrd"
+#     label = "Pcrd"
 
-    load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
+#     load = Load(1.0, 0.0, 0.0, 0.0, 0.0)
 
-    # load_type = "P"
-    # lengths = [calculate_Lcrd(dimensions, material, load_type)]
+#     # load_type = "P"
+#     # lengths = [calculate_Lcrd(dimensions, material, load_type)]
 
-    # coordinates = get_section_coordinates(dimensions)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+#     section = Section(label, material, dimensions, load, results)
 
-    return section 
+#     return section 
 
-end
+# end
 
 
 
@@ -317,44 +417,44 @@ function calculate_Mcrd_xx(dimensions, material)
 end
 
 
-function calculate_Mcrd_xx(dimensions, coordinates, material)
+# function calculate_Mcrd_xx(dimensions, coordinates, material)
 
-    label = "Mcrd_xx"
+#     label = "Mcrd_xx"
 
-    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+#     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
-    load_type = "M"
-    lengths = [calculate_Lcrd(dimensions, material, load_type)]
+#     load_type = "M"
+#     lengths = [calculate_Lcrd(dimensions, material, load_type)]
 
-    # coordinates = get_section_coordinates(dimensions)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+#     section = Section(label, material, dimensions, load, results)
 
-    return section 
+#     return section 
 
-end
+# end
 
 
-function calculate_Mcrd_xx(dimensions, coordinates, material, lengths)
+# function calculate_Mcrd_xx(dimensions, coordinates, material, lengths)
 
-    label = "Mcrd_xx"
+#     label = "Mcrd_xx"
 
-    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+#     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
-    load_type = "M"
-    # lengths = [calculate_Lcrd(dimensions, material, load_type)]
+#     load_type = "M"
+#     # lengths = [calculate_Lcrd(dimensions, material, load_type)]
 
-    # coordinates = get_section_coordinates(dimensions)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+#     section = Section(label, material, dimensions, load, results)
 
-    return section 
+#     return section 
 
-end
+# end
 
 
 
@@ -377,66 +477,86 @@ function calculate_Mcrℓ_xx(dimensions, material)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    #catch indistinct local buckling minimum here 
+    mode_type = ["L"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
 
-    return section 
+    Lcr_cFSM = model.curve[1][1]
 
-end
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
 
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
+        section = Section(label, material, dimensions, load, results, true)
 
-function calculate_Mcrℓ_xx(dimensions, coordinates, material)
-
-    label = "Mcrℓ_xx"
-
-    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
-
-    B = dimensions.B 
-    H = dimensions.H
-
-    if B > H / 2
-        lengths = range(0.5 * B, 1.5 * B, 9)
     else
-        lengths = range(0.25 * H, 1.25 * H, 9)
+
+        section = Section(label, material, dimensions, load, results)
+
     end
 
-    # coordinates = get_section_coordinates(dimensions)
-
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
-
-    section = Section(label, material, dimensions, load, results)
-
     return section 
 
 end
 
 
 
+# function calculate_Mcrℓ_xx(dimensions, coordinates, material)
 
-function calculate_Mcrℓ_xx(dimensions, coordinates, material, lengths)
+#     label = "Mcrℓ_xx"
 
-    label = "Mcrℓ_xx"
+#     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
 
-    load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+#     B = dimensions.B 
+#     H = dimensions.H
 
-    # B = dimensions.B 
-    # H = dimensions.H
+#     if B > H / 2
+#         lengths = range(0.5 * B, 1.5 * B, 9)
+#     else
+#         lengths = range(0.25 * H, 1.25 * H, 9)
+#     end
 
-    # if B > H / 2
-    #     lengths = range(0.5 * B, 1.5 * B, 9)
-    # else
-    #     lengths = range(0.25 * H, 1.25 * H, 9)
-    # end
+#     # coordinates = get_section_coordinates(dimensions)
 
-    # coordinates = get_section_coordinates(dimensions)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     section = Section(label, material, dimensions, load, results)
 
-    section = Section(label, material, dimensions, load, results)
+#     return section 
 
-    return section 
+# end
 
-end
+
+
+
+# function calculate_Mcrℓ_xx(dimensions, coordinates, material, lengths)
+
+#     label = "Mcrℓ_xx"
+
+#     load = Load(0.0, 1.0, 0.0, 0.0, 0.0)
+
+#     # B = dimensions.B 
+#     # H = dimensions.H
+
+#     # if B > H / 2
+#     #     lengths = range(0.5 * B, 1.5 * B, 9)
+#     # else
+#     #     lengths = range(0.25 * H, 1.25 * H, 9)
+#     # end
+
+#     # coordinates = get_section_coordinates(dimensions)
+
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+#     section = Section(label, material, dimensions, load, results)
+
+#     return section 
+
+# end
 
 
 #this is not the traditional strong axis distortional buckling, still important though in some cases for weak axis bending 
@@ -455,33 +575,57 @@ function calculate_Mcrd_yy_pos(dimensions, material)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    # section = Section(label, material, dimensions, load, results)
+
+    #catch indistinct local buckling minimum here 
+    mode_type = ["D"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
+
+    Lcr_cFSM = model.curve[1][1]
+
+    # println("Lcr_cFSM", Lcr_cFSM)
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
+
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+        section = Section(label, material, dimensions, load, results, true)
+
+    else
+
+        section = Section(label, material, dimensions, load, results)
+
+    end
+
 
     return section 
 
 end
 
 
-function calculate_Mcrd_yy_pos(dimensions, coordinates, material)
+# function calculate_Mcrd_yy_pos(dimensions, coordinates, material)
 
-    label = "Mcrd_yy_pos"
+#     label = "Mcrd_yy_pos"
 
-    load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
+#     load = Load(0.0, 0.0, -1.0, 0.0, 0.0)
 
-    load_type = "M"
-    Lcrd = calculate_Lcrd(dimensions, material, load_type)
+#     load_type = "M"
+#     Lcrd = calculate_Lcrd(dimensions, material, load_type)
     
-    lengths = range(0.5 * Lcrd, 1.5 * Lcrd, 9)
+#     lengths = range(0.5 * Lcrd, 1.5 * Lcrd, 9)
 
-    # coordinates = get_section_coordinates(dimensions)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+#     section = Section(label, material, dimensions, load, results)
 
-    return section 
+#     return section 
 
-end
+# end
 
 
 function calculate_Mcrℓ_yy_pos(dimensions, material)
@@ -514,7 +658,27 @@ function calculate_Mcrℓ_yy_pos(dimensions, material)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    #catch indistinct local buckling minimum here 
+    mode_type = ["L"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
+
+    Lcr_cFSM = model.curve[1][1]
+
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
+
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+        section = Section(label, material, dimensions, load, results, true)
+
+    else
+
+        section = Section(label, material, dimensions, load, results)
+
+    end
 
     return section 
 
@@ -555,7 +719,31 @@ function calculate_Mcrℓ_yy_pos(dimensions, coordinates, material)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    #catch indistinct local buckling minimum here 
+    mode_type = ["L"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
+
+    Lcr_cFSM = model.curve[1][1]
+
+    # println("Lcr_cFSM", Lcr_cFSM)
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
+
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+        section = Section(label, material, dimensions, load, results, true)
+
+    else
+
+        section = Section(label, material, dimensions, load, results)
+
+    end
+
+
+    # section = Section(label, material, dimensions, load, results)
 
     return section 
 
@@ -590,7 +778,31 @@ function calculate_Mcrℓ_yy_neg(dimensions, material)
 
     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+    # section = Section(label, material, dimensions, load, results)
+
+    #catch indistinct local buckling minimum here 
+    mode_type = ["L"]
+    coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+    model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
+
+    Lcr_cFSM = model.curve[1][1]
+
+    # println("Lcr_cFSM", Lcr_cFSM)
+    if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
+
+        println("results.Lcr", results.Lcr)
+        println("Lcr_cFSM", Lcr_cFSM)
+        lengths = [Lcr_cFSM]
+        results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+        section = Section(label, material, dimensions, load, results, true)
+
+    else
+
+        section = Section(label, material, dimensions, load, results)
+
+    end
+
 
     return section 
 
@@ -599,64 +811,87 @@ end
 
 
 
-function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material)
+# function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material)
 
-    label = "Mcrℓ_yy_neg"
+#     label = "Mcrℓ_yy_neg"
 
-    load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
+#     load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
 
-    B = dimensions.B 
-    H = dimensions.H
+#     B = dimensions.B 
+#     H = dimensions.H
 
-    # if B > 2 * H 
-    #     lengths = range(0.5 * B, 1.5 * B, 9)
-    # else
-    #     lengths = range(0.25 * H, 1.25 * H, 9)
-    # end
+#     # if B > 2 * H 
+#     #     lengths = range(0.5 * B, 1.5 * B, 9)
+#     # else
+#     #     lengths = range(0.25 * H, 1.25 * H, 9)
+#     # end
 
-    lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
-
-
-
-    # coordinates = get_section_coordinates(dimensions)
-
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
-
-    section = Section(label, material, dimensions, load, results)
-
-    return section 
-
-end
-
-
-function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material, lengths)
-
-    label = "Mcrℓ_yy_neg"
-
-    load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
-
-    B = dimensions.B 
-    H = dimensions.H
-
-    # if B > 2 * H 
-    #     lengths = range(0.5 * B, 1.5 * B, 9)
-    # else
-    #     lengths = range(0.25 * H, 1.25 * H, 9)
-    # end
-
-    # lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
+#     lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
 
 
 
-    # coordinates = get_section_coordinates(dimensions)
+#     # coordinates = get_section_coordinates(dimensions)
 
-    results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-    section = Section(label, material, dimensions, load, results)
+#     # section = Section(label, material, dimensions, load, results)
 
-    return section 
+#     #catch indistinct local buckling minimum here 
+#     mode_type = ["L"]
+#     coordinates = get_straight_corner_section_coordinates(dimensions) #straight corner coordinates 
+#     model = calculate_constrained_buckling_properties(coordinates, dimensions, load, material, mode_type)
 
-end
+#     Lcr_cFSM = model.curve[1][1]
+
+#     # println("Lcr_cFSM", Lcr_cFSM)
+#     if !isapprox(results.Lcr, Lcr_cFSM, rtol=0.05)
+
+#         println("results.Lcr", results.Lcr)
+#         println("Lcr_cFSM", Lcr_cFSM)
+#         lengths = [Lcr_cFSM]
+#         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+#         section = Section(label, material, dimensions, load, results, true)
+
+#     else
+
+#         section = Section(label, material, dimensions, load, results)
+
+#     end
+
+#     return section 
+
+# end
+
+
+# function calculate_Mcrℓ_yy_neg(dimensions, coordinates, material, lengths)
+
+#     label = "Mcrℓ_yy_neg"
+
+#     load = Load(0.0, 0.0, 1.0, 0.0, 0.0)
+
+#     B = dimensions.B 
+#     H = dimensions.H
+
+#     # if B > 2 * H 
+#     #     lengths = range(0.5 * B, 1.5 * B, 9)
+#     # else
+#     #     lengths = range(0.25 * H, 1.25 * H, 9)
+#     # end
+
+#     # lengths = range(0.5*maximum([B, H]), 2.0*maximum([B, H]), 7)
+
+
+
+#     # coordinates = get_section_coordinates(dimensions)
+
+#     results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
+
+#     section = Section(label, material, dimensions, load, results)
+
+#     return section 
+
+# end
 
 
 

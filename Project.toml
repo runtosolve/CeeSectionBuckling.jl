@@ -1,6 +1,6 @@
 name = "CeeSectionBuckling"
 uuid = "58e103f9-c1dd-473d-8fd2-46aa5cb27d98"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Cris Moen <cris.moen@runtosolve.com>"]
 
 [deps]
@@ -8,6 +8,7 @@ AISIS100 = "01f7396e-a581-4110-84fa-e8964400bef8"
 CUFSM = "82b4978f-06ae-48e0-88e8-a26b4f7a0fa1"
 CrossSectionGeometry = "e5713cf4-1a83-4860-95bf-b82253e75fb4"
 LinesCurvesNodes = "74a74c3a-221d-4cd1-a4eb-c3c8149e7592"
+OpenSectionBuckling = "a27af054-6946-4f6a-873a-7094cb2f6768"
 SectionProperties = "03320fb2-42b0-43fd-9b66-b95dbaa39193"
 
 [compat]
@@ -15,4 +16,5 @@ AISIS100 = "0.1.0"
 CUFSM = "0.1.0"
 CrossSectionGeometry = "0.1.0"
 LinesCurvesNodes = "0.1.0"
+OpenSectionBuckling = "0.1.0"
 SectionProperties = "0.1.0"

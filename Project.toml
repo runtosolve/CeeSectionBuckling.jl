@@ -1,6 +1,6 @@
 name = "CeeSectionBuckling"
 uuid = "58e103f9-c1dd-473d-8fd2-46aa5cb27d98"
-version = "0.2.0"
+version = "0.3.0"
 authors = ["Cris Moen <cris.moen@runtosolve.com>"]
 
 [deps]

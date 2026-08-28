@@ -70,6 +70,7 @@ function get_section_coordinates(dimensions)
     r = [r+t, r+t, r+t, r+t]
     n = [3, 3, 3, 3, 3]
     n_r = [3, 3, 3, 3];
+    n_r = [7, 7, 7, 7];
     θ = [π/2, π, -π/2, 0.0, π/2]
 
     coordinates = CrossSectionGeometry.create_thin_walled_cross_section_geometry(section_dimensions, θ, n, r, n_r, t, centerline = "to left", offset = (section_dimensions[2], section_dimensions[3] - section_dimensions[1]))
@@ -301,7 +302,7 @@ function calculate_Pcrℓ(dimensions, material)
         lengths = [Lcr_cFSM]
         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-        section = Section(label, material, dimensions, load, results, true)
+        section = Section(label, material, dimensions, load, results)
 
     else
 
@@ -506,7 +507,7 @@ function calculate_Mcrℓ_xx(dimensions, material)
         lengths = [Lcr_cFSM]
         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-        section = Section(label, material, dimensions, load, results, true)
+        section = Section(label, material, dimensions, load, results)
 
     else
 
@@ -607,7 +608,7 @@ function calculate_Mcrd_yy_pos(dimensions, material)
         lengths = [Lcr_cFSM]
         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-        section = Section(label, material, dimensions, load, results, true)
+        section = Section(label, material, dimensions, load, results)
 
     else
 
@@ -687,7 +688,7 @@ function calculate_Mcrℓ_yy_pos(dimensions, material)
         lengths = [Lcr_cFSM]
         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-        section = Section(label, material, dimensions, load, results, true)
+        section = Section(label, material, dimensions, load, results)
 
     else
 
@@ -810,7 +811,7 @@ function calculate_Mcrℓ_yy_neg(dimensions, material)
         lengths = [Lcr_cFSM]
         results = calculate_buckling_properties(coordinates, dimensions, load, material, lengths)
 
-        section = Section(label, material, dimensions, load, results, true)
+        section = Section(label, material, dimensions, load, results)
 
     else
 

@@ -12,7 +12,7 @@ OpenSectionBuckling = "a27af054-6946-4f6a-873a-7094cb2f6768"
 SectionProperties = "03320fb2-42b0-43fd-9b66-b95dbaa39193"
 
 [compat]
-AISIS100 = "0.1.0"
+AISIS100 = "0.1.0, 0.2.0"
 CUFSM = "0.1.0"
 CrossSectionGeometry = "0.1.0"
 LinesCurvesNodes = "0.1.0"

@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "a7240cc635f796ba3c0533d4e2063c5a7da43679"
+project_hash = "fafae6a0e1021d8f623e49a6ea2e1765dfb261ab"
 
 [[deps.AISIS100]]
 deps = ["CSV", "DataFrames", "LinearAlgebra", "Statistics", "Unitful"]
@@ -103,9 +103,9 @@ version = "4.2.0"
 
 [[deps.CrossSectionGeometry]]
 deps = ["LazySets", "LinearAlgebra", "LinesCurvesNodes", "StaticArrays", "Statistics"]
-git-tree-sha1 = "7e59f04fc75268b049bd60f9e3a5fb4bd25dffc2"
+path = "/Users/crismoen/.julia/dev/CrossSectionGeometry"
 uuid = "e5713cf4-1a83-4860-95bf-b82253e75fb4"
-version = "0.1.0"
+version = "0.2.0"
 
 [[deps.DataAPI]]
 git-tree-sha1 = "abe83f3a2f1b857aac70ef8b269080af17764bbe"
@@ -522,7 +522,7 @@ version = "3.5.6+0"
 
 [[deps.OpenSectionBuckling]]
 deps = ["CUFSM", "CrossSectionGeometry", "LinearAlgebra", "LinesCurvesNodes", "cFSM"]
-git-tree-sha1 = "b390176a7f39f1d3f2565b2b263520f73e4f6796"
+path = "/Users/crismoen/.julia/dev/OpenSectionBuckling"
 uuid = "a27af054-6946-4f6a-873a-7094cb2f6768"
 version = "0.1.1"
 

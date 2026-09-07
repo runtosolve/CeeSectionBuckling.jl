@@ -1,2 +1,6 @@
 [deps]
+CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 CeeSectionBuckling = "58e103f9-c1dd-473d-8fd2-46aa5cb27d98"
+CrossSectionGeometry = "e5713cf4-1a83-4860-95bf-b82253e75fb4"
+OpenSectionBuckling = "a27af054-6946-4f6a-873a-7094cb2f6768"
+ShowCUFSM = "6694c6e5-0e65-41ca-a2e3-80270abd1bf3"

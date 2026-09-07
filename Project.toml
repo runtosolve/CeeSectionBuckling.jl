@@ -14,7 +14,7 @@ SectionProperties = "03320fb2-42b0-43fd-9b66-b95dbaa39193"
 [compat]
 AISIS100 = "0.1.0, 0.2.0"
 CUFSM = "0.1.0"
-CrossSectionGeometry = "0.1.0"
+CrossSectionGeometry = "0.1.0, 0.2.0"
 LinesCurvesNodes = "0.1.0"
 OpenSectionBuckling = "0.1.0"
 SectionProperties = "0.1.0"
